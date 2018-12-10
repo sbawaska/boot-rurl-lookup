@@ -8,7 +8,9 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 
+import java.util.Formatter;
 import java.util.function.Function;
 
 @SpringBootApplication
@@ -35,16 +37,29 @@ public class RurlLookupApplication {
     public Function<String, String> lookupUrl() {
         return s -> {
             System.out.println("received request:"+s);
-            String hash = getHashFromUrl(s);
-            return lookupFromRedis(hash);
+            String param = getParamFromUrl(s);
+            return lookupFromRedis(param);
         };
     }
 
-    private String lookupFromRedis(String hash) {
-        return redisTemplate.opsForValue().get(hash);
+    private String lookupFromRedis(String param) {
+        if (param.equalsIgnoreCase("topDomains")) {
+            return getDomainLeaderBoard();
+        }
+        return redisTemplate.opsForValue().get(param);
     }
 
-    private String getHashFromUrl(String shortUrl) {
+    private String getDomainLeaderBoard() {
+        StringBuilder sb = new StringBuilder();
+        Formatter fmt = new Formatter(sb);
+        for (ZSetOperations.TypedTuple<String> tuple : redisTemplate.opsForZSet()
+                .rangeByScoreWithScores("topDomains", 0, -1)) {
+            fmt.format("%10d: %s%n", tuple.getScore(), tuple.getValue());
+        }
+        return sb.toString();
+    }
+
+    private String getParamFromUrl(String shortUrl) {
         if (shortUrl == null || shortUrl.length() < DOMAIN_NAME.length()) {
             throw new IllegalArgumentException("Not a valid shortened url: "+shortUrl);
         }
