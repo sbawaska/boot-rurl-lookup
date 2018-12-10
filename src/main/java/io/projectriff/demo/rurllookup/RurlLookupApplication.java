@@ -38,7 +38,9 @@ public class RurlLookupApplication {
         return s -> {
             System.out.println("received request:"+s);
             String param = getParamFromUrl(s);
-            return lookupFromRedis(param);
+            String retVal = lookupFromRedis(param);
+            System.out.println("RETURNING:"+retVal);
+            return retVal;
         };
     }
 
@@ -55,6 +57,7 @@ public class RurlLookupApplication {
         for (ZSetOperations.TypedTuple<String> tuple : redisTemplate.opsForZSet()
                 .rangeByScoreWithScores("topDomains", 0, -1)) {
             fmt.format("%10d: %s%n", tuple.getScore(), tuple.getValue());
+            System.out.println("ADDING:"+tuple.getValue());
         }
         return sb.toString();
     }
