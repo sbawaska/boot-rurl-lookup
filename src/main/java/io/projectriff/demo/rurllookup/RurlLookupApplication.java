@@ -54,7 +54,7 @@ public class RurlLookupApplication {
         Formatter fmt = new Formatter(sb);
         for (ZSetOperations.TypedTuple<String> tuple : redisTemplate.opsForZSet()
                 .rangeByScoreWithScores("topDomains", 0, Integer.MAX_VALUE)) {
-            fmt.format("%10d: %s%n", tuple.getScore(), tuple.getValue());
+            fmt.format("%10s: %s%n", tuple.getScore(), tuple.getValue());
         }
         return sb.toString();
     }
