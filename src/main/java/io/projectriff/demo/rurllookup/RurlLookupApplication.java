@@ -31,6 +31,7 @@ public class RurlLookupApplication {
                 "my-redis-master.default.svc.cluster.local"));
     }
 
+    @Bean
     public Function<String, String> lookupUrl() {
         return s -> {
             System.out.println("received request:"+s);
